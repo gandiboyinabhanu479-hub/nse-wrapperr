@@ -2,3 +2,4 @@ flask
 nse
 gunicorn
 httpx[http2]
+nsepython
