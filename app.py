@@ -55,5 +55,27 @@ def pcr(symbol):
         return jsonify({"status": "error", "message": str(e), "trace": traceback.format_exc()}), 500
 
 
+from nsepython import nse_fiidii
+
+@app.route("/fiidii")
+def fiidii():
+    try:
+        data = nse_fiidii("list")  # returns raw list format
+
+        result = {}
+        for row in data:
+            category = "fii" if "FII" in row["category"] else "dii"
+            result[category] = {
+                "buyValue": float(row["buyValue"]),
+                "sellValue": float(row["sellValue"]),
+                "netValue": float(row["netValue"]),
+                "date": row["date"]
+            }
+
+        return jsonify({"status": "success", "data": result})
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
