@@ -34,17 +34,20 @@ def breadth(index_name):
 def pcr(symbol):
     try:
         symbol = symbol.lower()  # 'nifty' or 'banknifty'
-        expiry_list = nse.getFuturesExpiry(index=symbol)
-        nearest_expiry = datetime.strptime(expiry_list[0], "%d-%b-%Y")
+
+        # Let optionChain auto-resolve the nearest valid OPTIONS expiry
+        # (not the futures expiry - they differ: options expire weekly, futures monthly)
+        raw_chain = nse.optionChain(symbol=symbol)
+        expiry_str = raw_chain["records"]["expiryDates"][0]
+        nearest_expiry = datetime.strptime(expiry_str, "%d-%b-%Y")
 
         compiled = nse.compileOptionChain(symbol=symbol, expiryDate=nearest_expiry)
-        raw_chain = nse.optionChain(symbol=symbol, expiry_date=nearest_expiry)
         max_pain = NSE.maxpain(raw_chain, nearest_expiry)
 
         return jsonify({
             "status": "success",
             "symbol": symbol,
-            "expiry": expiry_list[0],
+            "expiry": expiry_str,
             "max_pain": max_pain,
             "compiled_summary": compiled
         })
